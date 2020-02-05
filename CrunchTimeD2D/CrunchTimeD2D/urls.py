@@ -19,6 +19,7 @@ from django.urls import include, path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('TestBookStore/', include('TestBookStore.urls')),
+    #path('BookDetail/', include('TestBookStore.urls')),
 ]
 
 from django.views.generic import RedirectView
