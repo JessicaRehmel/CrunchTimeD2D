@@ -21,3 +21,8 @@ urlpatterns = [
     path('TestBookStore/', include('TestBookStore.urls')),
     #path('BookDetail/', include('TestBookStore.urls')),
 ]
+
+from django.views.generic import RedirectView
+urlpatterns += [
+    path('', RedirectView.as_view(url='TestBookStore/', permanent=True)),
+]
