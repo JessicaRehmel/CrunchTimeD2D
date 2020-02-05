@@ -1,0 +1,10 @@
+p {
+    color: black;
+}
+
+#header {
+    background-color: #1a53ff;
+    padding-left: 30px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
