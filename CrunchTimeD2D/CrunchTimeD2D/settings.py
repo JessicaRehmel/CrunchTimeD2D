@@ -31,12 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-<<<<<<< HEAD
-    'TestBookStore.contrib.TestBookStoreConfig',
     'rest_framework',
-=======
     'TestBookStore.apps.TestbookstoreConfig',
->>>>>>> master
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
