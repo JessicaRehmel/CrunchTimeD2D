@@ -6,13 +6,19 @@ from rest_framework import generics, permissions, renderers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from .models import *
 
 from .models import OnixFile
 from .serializers import OnixSerializer
 
 # Create your views here.
 def index(request):
-    return render(request, 'index.html')
+    all_books = Book.objects.all()
+
+    context = {
+        'all_books': all_books,
+    }
+    return render(request, 'index.html', context = context)
 
 def view_book_detail(request):
     return render(request, 'book_detail.html')
