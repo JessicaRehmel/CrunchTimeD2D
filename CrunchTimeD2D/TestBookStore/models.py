@@ -8,7 +8,7 @@ class OnixFile(models.Model):
 
 
 class Book(models.Model):
-    bookId = models.CharField(max_length=20)
+    bookId = models.CharField(max_length=100)
     isbn13 = models.CharField(max_length=20)
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=100, blank=True)
@@ -19,11 +19,11 @@ class Book(models.Model):
     bookFormat = models.CharField(max_length=10)
     price = models.CharField(max_length=10)
     releaseDate = models.DateTimeField()
+    publisher = models.CharField(max_length=100, blank=True)
 
 
 
 class Author(models.Model):
-    authorId = models.CharField(max_length=20) #ensures that if we have multiple authors with the same name in the database, they are listed separately
     givenName = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     books = models.ManyToManyField('Book', blank=True)
