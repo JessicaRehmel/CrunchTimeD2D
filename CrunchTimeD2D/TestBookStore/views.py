@@ -24,3 +24,11 @@ def submit_onix(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def process_onix(request):
+    #read data from hard-coded file location
+    #use lxml to parse the onix data into a series of Book objects
+    #foreach Book object, see if it's in the database
+    #   if so update it
+    #   else add it
