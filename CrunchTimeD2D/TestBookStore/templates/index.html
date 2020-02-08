@@ -6,4 +6,27 @@
     </div> 
         <p>Book List</p>
         <div id ="line"></div>
+        {% for book in all_books %}
+        <a href = "{% url 'view_book_detail' %}">
+            <div id = "entry">
+                <br>
+                <b>{{ book.title }}</b><br>
+                <i>{{ book.subtitle }}</i>
+                <p>Summary:</p>
+                <p>{{ book.description }}</p>
+                <div class="spread">
+                    <span>ISBN: {{ book.isbn13 }}</span>
+                    <span>Series: {{ book.seriesName }}</span>
+                    <span>Volume: {{ book.volumeNo }}</span>
+                </div>
+                <div class="spread">
+                    <span>Release Date: {{ book.releaseDate }}</span>
+                    <span>Price: {{ book.price }}</span>
+                    <span>Book Format: {{ book.bookFormat }}</span>
+                </div>
+                <br>
+                <div id ="line"></div>
+            </div>
+        </a>
+        {% endfor %}
 {% endblock %}
