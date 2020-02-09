@@ -42,15 +42,25 @@ def process_onix(request):
         if obj.tag == "Product": #filters out anything that isn't a book
             for elem in obj.getchildren(): #gets all the elements describing the current book
                 if not elem.text:
-                    text = "None"
+                    text = ""
                 else:
                     text = elem.text
 
                 if elem.tag == "RecordReference":
-                    book_dict[elem.tag] = text
+                    book_dict["bookId"] = text
+
+                elif elem.tag == "ProductIdentifier":
+                    c = elem.getchildren()
+                    if c[0].text and c[0].text == "15" and c[1].text: #first child = ProductIDType (15 = isbn13), second = IDValue
+                        book_dict["isbn13"] = c[1].text
+                    else:
+                        pass #throw some kind of error because we couldn't find the isbn???
+                elif elem.tag == "DescriptiveDetail":
+                    
+
                 '''if/elif/else switch to collect all the relevant data about the current book:
-                --bookId
-                --isbn13
+                bookId
+                isbn13                
                 --title
                 --subtitle
                 --seriesName
@@ -58,16 +68,20 @@ def process_onix(request):
                 --authors                                
                     --givenName
                     --surname
+                --language? (add to models.py)
+
                 --description
                 --bookFormat
                 --price
                 --releaseDate
+                --publisher
                 '''
-
+            books.append(book_dict)
+            book_dict = {}
     
-    #foreach Book object, see if it's in the database
-    #   foreach Author object, see if it's in the database
-    #       if so update it
-    #       else add it
-    #   if so update it
-    #   else add it
+    #foreach Book b in books, see if it's in the database
+    #   foreach Author in b, see if it's in the database
+    #       if so update author
+    #       else add author
+    #   if so update book
+    #   else add book
