@@ -2,6 +2,30 @@ p {
     color: black;
 }
 
+ /* unvisited link */
+ a:link {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* visited link */
+  a:visited {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* mouse over link */
+  a:hover {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* selected link */
+  a:active {
+    color: black;
+    text-decoration: none;
+  } 
+
 #header {
     background-color: #1a53ff;
     padding-left: 30px;
@@ -17,5 +41,26 @@ p {
 }
 
 .search{
+    text-align: right;
+}
+
+#entry{
+    margin-left: 10px;
+}
+
+div.spread {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+div.spread span {
+    display: table-cell;
+    text-align: center;
+}
+
+div.spread span:first-child {
+    text-align: left;
+}
+div.spread span:last-child {
     text-align: right;
 }

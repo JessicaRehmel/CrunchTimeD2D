@@ -4,3 +4,31 @@ from django.urls import reverse
 
 class OnixFile(models.Model):
     data = models.TextField()
+
+
+
+class Book(models.Model):
+    bookId = models.CharField(max_length=20)
+    isbn13 = models.CharField(max_length=20)
+    title = models.CharField(max_length=100)
+    subtitle = models.CharField(max_length=100, blank=True)
+    seriesName = models.CharField(max_length=100, blank=True)
+    volumeNo = models.CharField(max_length=3, blank=True)
+    authors = models.ManyToManyField('Author', blank=True)
+    description = models.TextField(blank=True)
+    bookFormat = models.CharField(max_length=10)
+    price = models.CharField(max_length=10)
+    releaseDate = models.DateTimeField()
+
+    def __str__(self):
+        return f'{self.title}'
+
+
+
+class Author(models.Model):
+    givenName = models.CharField(max_length=50)
+    surname = models.CharField(max_length=50)
+    books = models.ManyToManyField('Book', blank=True)
+
+    def __str__(self):
+        return f'{self.surname}, {self.givenName}'
