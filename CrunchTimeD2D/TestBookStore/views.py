@@ -25,6 +25,13 @@ def index(request):
     }
     return render(request, 'index.html', context = context)
 
+def view_book_detail(request, ID):
+    book = Book.objects.get(bookId=ID)
+
+    context = {
+        'book': book,
+    }
+    return render(request, 'book_detail.html', context = context)
 """ def search(request):
     all_books = Book.objects.all().order_by('title')
     #all_books = Book.objects.filter(title__contains = "the")
@@ -47,8 +54,6 @@ class SearchResultsView(generic.ListView):
         return object_list
 
 
-def view_book_detail(request):
-    return render(request, 'book_detail.html')
 
 @api_view(['POST'])
 def submit_onix(request):
