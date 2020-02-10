@@ -20,8 +20,13 @@ def index(request):
     }
     return render(request, 'index.html', context = context)
 
-def view_book_detail(request):
-    return render(request, 'book_detail.html')
+def view_book_detail(request, ID):
+    book = Book.objects.get(bookId=ID)
+
+    context = {
+        'book': book,
+    }
+    return render(request, 'book_detail.html', context = context)
 
 @api_view(['POST'])
 def submit_onix(request):
