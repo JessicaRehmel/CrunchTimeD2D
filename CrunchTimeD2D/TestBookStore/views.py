@@ -49,25 +49,43 @@ def process_onix(request):
         book.subtitle = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text
         book.seriesName = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text
         book.volumeNo = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
-        book.bookFormat = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text #ProductFormDetail E101 indicates EPUB
-        #TODO: figure out how to get/handle authors with given name & surname
+        book.bookFormat = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text
+
+        #authors
+        author_list = []
+        contribs = p.xpath("./DescriptiveDetail/Contributor")
+        for c in contribs:
+            author = Author()
+
+            author.authorId = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
+            
+            names = c.xpath("./PersonName")[0].text
+            author.givenName = names.split()[0]
+            author.surname = names.split()[1]
+
+            author_list.append(author)
+            
+        book.authors = author_list            
 
         #info from CollateralDetail child of product object
-        book.description = p.xpath("")[0].text
+        book.description = p.xpath("./CollateralDetail/TextContent[TextType='03']/Text")[0].text
 
         #info from PublishingDetail child of product object
-        book.publisher = p.xpath("")[0].text
+        book.publisher = p.xpath("./PublishingDetail/Publisher[PublishingRole='01']/PublisherName")[0].text
 
         #info from ProductSupply child of product object
-        book.price = p.xpath("")[0].text
-        book.releaseDate = p.xpath("")[0].text           
+        book.releaseDate = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
+        book.price = p.xpath("./ProductSupply/SupplyDetail/Price[CurrencyCode='USD']/PriceAmount")[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
 
         #add the book to the list
         book_list.append(book)
     
-    #foreach Book b in book_list, see if it's in the database
-    #   foreach Author in b.authors, see if it's in the database
-    #       if so update author
-    #       else add author
-    #   if so update book
-    #   else add book
+
+    for b in book_list:
+        for a in b.authors:
+            pass
+            #if a is in the database, update it
+            #else add it
+        
+        #if b is in the database, update it
+        #else add it

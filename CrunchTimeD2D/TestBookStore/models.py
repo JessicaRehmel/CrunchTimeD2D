@@ -16,14 +16,15 @@ class Book(models.Model):
     volumeNo = models.CharField(max_length=3, blank=True)
     authors = models.ManyToManyField('Author', blank=True)
     description = models.TextField(blank=True)
-    bookFormat = models.CharField(max_length=10)
-    price = models.CharField(max_length=10)
-    releaseDate = models.DateTimeField()
+    bookFormat = models.CharField(max_length=10, blank=True)
+    price = models.CharField(max_length=10, blank=True)
+    releaseDate = models.DateTimeField(blank=True)
     publisher = models.CharField(max_length=100, blank=True)
 
 
 
 class Author(models.Model):
+    authorId = models.CharField(max_length=10)
     givenName = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     books = models.ManyToManyField('Book', blank=True)
