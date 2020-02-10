@@ -56,7 +56,7 @@ def submit_onix(request):
     f.write(request.POST['data'])
     f.close()
     try:
-        errors = onixcheck.validate("onix.xml")
+        errors = onixcheck.validate("tempOnix.xml")
         if (len(errors) == 0):
             f = open("onix.xml", "w")
             f.write(request.POST['data'])
