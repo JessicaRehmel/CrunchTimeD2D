@@ -20,6 +20,12 @@ class Book(models.Model):
     price = models.CharField(max_length=10)
     releaseDate = models.DateTimeField()
 
+    def get_authors(self):
+        return Author.objects.filter(books = self)
+
+    def get_absolute_url(self):
+        return reverse('book_detail', args=[str(self.bookId)])
+
     def __str__(self):
         return f'{self.title}'
 
