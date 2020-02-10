@@ -1,0 +1,38 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<div class ="search">
+    <form action = "{% url 'search' %}" method ="GET">
+        <input name="q" type="text" placeholder="Search...">
+    </form>
+</div> 
+<h3>Search Results</h3>
+<div id ="line"></div>
+  {% for book in object_list %}
+    <a href = "{% url 'view_book_detail' %}">
+        <div id = "entry">
+            <br>
+            <b>{{ book.title }}</b><br>
+            <h6>{{ book.subtitle }}</h6>
+            {% for a in book.get_authors %}
+                <i>{{ a.givenName }} {{ a.surname }}</i><br>
+            {% endfor %}
+            <p>Summary: {{ book.description }}</p>
+            <div class="spread">
+                <span>ISBN: {{ book.isbn13 }}</span>
+                <span>Series: {{ book.seriesName }}</span>
+                <span>Volume: {{ book.volumeNo }}</span>
+            </div>
+            <div class="spread">
+                <span>Release Date: {{ book.releaseDate }}</span>
+                <span>Price: {{ book.price }}</span>
+                <span>Book Format: {{ book.bookFormat }}</span>
+            </div>
+            <br>
+            <div id ="line"></div>
+        </div>
+    </a>
+  {% endfor %}
+
+{% endblock %}
