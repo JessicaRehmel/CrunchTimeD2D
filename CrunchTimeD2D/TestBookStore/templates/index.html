@@ -2,18 +2,22 @@
 
 {% block content %}
     <div class ="search">
-        <input type="text" placeholder="Search..">
+        <form action = "{% url 'search' %}" method ="GET">
+            <input name="q" type="text" placeholder="Search...">
+        </form>
     </div> 
-        <p>Book List</p>
+        <h3>Book List</h3>
         <div id ="line"></div>
         {% for book in all_books %}
         <a href = "{% url 'view_book_detail' %}">
             <div id = "entry">
                 <br>
                 <b>{{ book.title }}</b><br>
-                <i>{{ book.subtitle }}</i>
-                <p>Summary:</p>
-                <p>{{ book.description }}</p>
+                <h6>{{ book.subtitle }}</h6>
+                {% for a in book.get_authors %}
+                    <i>{{ a.givenName }} {{ a.surname }}</i><br>
+                {% endfor %}
+                <p>Summary: {{ book.description }}</p>
                 <div class="spread">
                     <span>ISBN: {{ book.isbn13 }}</span>
                     <span>Series: {{ book.seriesName }}</span>
@@ -29,4 +33,5 @@
             </div>
         </a>
         {% endfor %}
+        <br>
 {% endblock %}
