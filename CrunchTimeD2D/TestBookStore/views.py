@@ -11,8 +11,6 @@ import onixcheck, os
 from .models import *
 from django.db.models import Q
 
-from .models import OnixFile
-from .serializers import OnixSerializer
 
 # Create your views here.
 def index(request):
@@ -32,6 +30,8 @@ def view_book_detail(request, ID):
         'book': book,
     }
     return render(request, 'book_detail.html', context = context)
+
+
 """ def search(request):
     all_books = Book.objects.all().order_by('title')
     #all_books = Book.objects.filter(title__contains = "the")

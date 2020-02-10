@@ -12,13 +12,13 @@
     <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
     <p><strong>Series Name:</strong> {{ book.seriesName }}</p>
     <p><strong>Volume Number:</strong> {{ book.volumeNo }}</p>
-    <p><strong>Format:</strong> {{ book.format }}</p>
+    <p><strong>Format:</strong> {{ book.bookFormat }}</p>
     <p><strong>List of Authors:</strong></p>
     <ul>
-        {% for author in book.authors %}
-        <li>
-        <p>{{ Author.givenName }}</p>
-        </li>
+        {% for a in book.get_authors %}
+       
+        <p>{{ a.givenName }} {{a.surname }}</p>
+        
         {% endfor %}
     </ul>
 
