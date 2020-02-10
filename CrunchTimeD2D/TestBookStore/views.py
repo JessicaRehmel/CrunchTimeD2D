@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-from .models import OnixFile
+from .models import OnixFile, Book, Author
 from .serializers import OnixSerializer
 
 # Create your views here.
@@ -35,52 +35,38 @@ def process_onix(request):
 
     root = etree.fromstring(xml)
 
-    book_dict = {} #used to store the data about a book until it goes into the database
-    books = [] #holds all the book_dict objects
+    book_list = []
+    products = root.xpath("//Product")
+    for p in products:
+        book = Book()
 
-    for obj in root.getchildren(): #gets the header & all products
-        if obj.tag == "Product": #filters out anything that isn't a book
-            for elem in obj.getchildren(): #gets all the elements describing the current book
-                if not elem.text:
-                    text = ""
-                else:
-                    text = elem.text
+        #info from direct children of the product object
+        book.bookId = p.xpath("./RecordReference[1]")[0].text
+        book.isbn13 = p.xpath("./ProductIdentifier[ProductIDType='15']/IDValue")[0].text
 
-                if elem.tag == "RecordReference":
-                    book_dict["bookId"] = text
+        #info from DescriptiveDetail child of product object
+        book.title = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/TitleText")[0].text
+        book.subtitle = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text
+        book.seriesName = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text
+        book.volumeNo = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
+        book.bookFormat = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text #ProductFormDetail E101 indicates EPUB
+        #TODO: figure out how to get/handle authors with given name & surname
 
-                elif elem.tag == "ProductIdentifier":
-                    c = elem.getchildren()
-                    if c[0].text and c[0].text == "15" and c[1].text: #first child = ProductIDType (15 = isbn13), second = IDValue
-                        book_dict["isbn13"] = c[1].text
-                    else:
-                        pass #throw some kind of error because we couldn't find the isbn???
-                elif elem.tag == "DescriptiveDetail":
-                    
+        #info from CollateralDetail child of product object
+        book.description = p.xpath("")[0].text
 
-                '''if/elif/else switch to collect all the relevant data about the current book:
-                bookId
-                isbn13                
-                --title
-                --subtitle
-                --seriesName
-                --volumeNo
-                --authors                                
-                    --givenName
-                    --surname
-                --language? (add to models.py)
+        #info from PublishingDetail child of product object
+        book.publisher = p.xpath("")[0].text
 
-                --description
-                --bookFormat
-                --price
-                --releaseDate
-                --publisher
-                '''
-            books.append(book_dict)
-            book_dict = {}
+        #info from ProductSupply child of product object
+        book.price = p.xpath("")[0].text
+        book.releaseDate = p.xpath("")[0].text           
+
+        #add the book to the list
+        book_list.append(book)
     
-    #foreach Book b in books, see if it's in the database
-    #   foreach Author in b, see if it's in the database
+    #foreach Book b in book_list, see if it's in the database
+    #   foreach Author in b.authors, see if it's in the database
     #       if so update author
     #       else add author
     #   if so update book
