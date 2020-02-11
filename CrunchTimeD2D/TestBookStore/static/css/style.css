@@ -6,6 +6,10 @@ h3 {
     margin-left: 10px;
 }
 
+h4 {
+    margin-left: 10px;
+}
+
  /* unvisited link */
  a:link {
     color: black;
@@ -43,6 +47,10 @@ h3 {
     height: 1px;
     border-bottom: 1px solid black;
     margin-left: 10px;
+}
+
+#search-term {
+    color:darkblue
 }
 
 .search{
