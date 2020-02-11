@@ -24,6 +24,18 @@ def index(request):
 
 def view_book_detail(request, ID):
     book = Book.objects.get(bookId=ID)
+<<<<<<< HEAD
+=======
+
+    context = {
+        'book': book,
+    }
+    return render(request, 'book_detail.html', context = context)
+""" def search(request):
+    all_books = Book.objects.all().order_by('title')
+    #all_books = Book.objects.filter(title__contains = "the")
+    all_books = Book.objects.filter(author__in = Author.objects.filter(surname__contains = "Arisoa")) | Book.objects.filter(author__in = Author.objects.filter(givenName = "Arisoa"))
+>>>>>>> master
 
     context = {
         'book': book,
