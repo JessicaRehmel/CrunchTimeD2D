@@ -11,9 +11,6 @@ import onixcheck, os
 from .models import *
 from django.db.models import Q
 
-from .models import OnixFile
-from .serializers import OnixSerializer
-
 # Create your views here.
 def index(request):
     all_books = Book.objects.all().order_by('title')
@@ -27,6 +24,8 @@ def index(request):
 
 def view_book_detail(request, ID):
     book = Book.objects.get(bookId=ID)
+<<<<<<< HEAD
+=======
 
     context = {
         'book': book,
@@ -36,22 +35,55 @@ def view_book_detail(request, ID):
     all_books = Book.objects.all().order_by('title')
     #all_books = Book.objects.filter(title__contains = "the")
     all_books = Book.objects.filter(author__in = Author.objects.filter(surname__contains = "Arisoa")) | Book.objects.filter(author__in = Author.objects.filter(givenName = "Arisoa"))
+>>>>>>> master
 
     context = {
-        'all_books': all_books,
+        'book': book,
     }
-    return render(request, 'search.html', context = context) """
+    return render(request, 'book_detail.html', context = context)
 
 class SearchResultsView(generic.ListView):
     model = Book
     template_name = 'search.html'
 
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        query = self.request.GET.get('q')
+        author_list = Author.objects.filter(surname__icontains = query)
+        author_list = author_list | Author.objects.filter(givenName__icontains = query)
+        title_list = Book.objects.filter(Q(title__icontains=query) | Q(subtitle__icontains = query)).order_by('title')
+        #subtitle_list = Book.objects.filter(subtitle__icontains = query).order_by('title')
+        #title_list = title_list.union(subtitle_list, all = False)
+        book_list = Book.objects.none()
+        # add query authors
+        for a in author_list:
+            book_list = book_list.union(a.get_books(), all = False).order_by('title')
+        desc_list = Book.objects.filter(description__icontains = query).order_by('title')
+        context['author_list'] = book_list
+        context['title_list'] = title_list
+        context['desc_list'] = desc_list
+        context['q'] = query
+        return context
+
     def get_queryset(self):
         query = self.request.GET.get('q')
-        object_list = Book.objects.filter(
-            Q(title__icontains='subject')
-        )
-        return object_list
+        author_list = Author.objects.filter(surname__icontains = query)
+        author_list = author_list | Author.objects.filter(givenName__icontains = query)
+        title_list = Book.objects.filter(title__icontains=query)
+        subtitle_list = Book.objects.filter(subtitle__icontains = query)
+        book_list = Book.objects.none()
+        # add query authors
+        for a in author_list:
+            book_list = book_list.union(a.get_books(), all = False)
+        #add query titles
+        #book_list = book_list.union(title_list, all = False)
+        # add query subtitles
+        #book_list = book_list.union(subtitle_list, all = False)
+        # add descriptions
+        desc_list = Book.objects.filter(description__icontains = query)
+        #book_list = book_list.union(desc_list, all = False)
+        t = book_list
+        return t
 
 
 
