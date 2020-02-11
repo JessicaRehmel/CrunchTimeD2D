@@ -2,9 +2,6 @@ from django.db import models
 from django.urls import reverse
 
 
-class OnixFile(models.Model):
-    data = models.TextField()
-
 
 
 class Book(models.Model):
@@ -19,6 +16,12 @@ class Book(models.Model):
     bookFormat = models.CharField(max_length=10)
     price = models.CharField(max_length=10)
     releaseDate = models.DateTimeField()
+
+    def get_authors(self):
+        return Author.objects.filter(books = self)
+
+    def get_absolute_url(self):
+        return reverse('book_detail', args=[str(self.bookId)])
 
     def __str__(self):
         return f'{self.title}'
