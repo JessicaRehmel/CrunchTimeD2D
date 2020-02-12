@@ -12,7 +12,7 @@
     <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
     <p><strong>Series Name:</strong> {{ book.series_name }}</p>
     <p><strong>Volume Number:</strong> {{ book.volume_no }}</p>
-    <p><strong>Format:</strong> {{ book.format }}</p>
+    <p><strong>Format:</strong> {{ book.book_format }}</p>
     <p><strong>List of Authors:</strong></p>
     <ul>
         {% for a in book.get_authors %}
