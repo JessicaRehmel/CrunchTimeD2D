@@ -41,15 +41,15 @@ def process_onix(request):
         book = Book()
 
         #info from direct children of the product object
-        book.bookId = p.xpath("./RecordReference[1]")[0].text
-        book.isbn13 = p.xpath("./ProductIdentifier[ProductIDType='15']/IDValue")[0].text
+        book.book_id = p.xpath("./RecordReference[1]")[0].text
+        book.isbn_13 = p.xpath("./ProductIdentifier[ProductIDType='15']/IDValue")[0].text
 
         #info from DescriptiveDetail child of product object
         book.title = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/TitleText")[0].text
         book.subtitle = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text
-        book.seriesName = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text
-        book.volumeNo = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
-        book.bookFormat = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text
+        book.series_name = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text
+        book.volume_no = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
+        book.book_format = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text
 
         #authors
         author_list = []
@@ -57,10 +57,10 @@ def process_onix(request):
         for c in contribs:
             author = Author()
 
-            author.authorId = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
+            author.author_id = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
             
             names = c.xpath("./PersonName")[0].text
-            author.givenName = names.split()[0]
+            author.given_name = names.split()[0]
             author.surname = names.split()[1]
 
             author_list.append(author)
@@ -74,18 +74,18 @@ def process_onix(request):
         book.publisher = p.xpath("./PublishingDetail/Publisher[PublishingRole='01']/PublisherName")[0].text
 
         #info from ProductSupply child of product object
-        book.releaseDate = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
+        book.release_date = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
         book.price = p.xpath("./ProductSupply/SupplyDetail/Price[CurrencyCode='USD']/PriceAmount")[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
 
         #add the book to the list
         book_list.append(book)
     
 
-    for b in book_list:
-        for a in b.authors:
-            pass
-            #if a is in the database, update it
-            #else add it
+    for b in book_list:        
+        b.save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
         
-        #if b is in the database, update it
-        #else add it
+        for a in b.authors:
+            a.save() #ditto for author_id
+            
+            b.authors.add(a) #add it to the book
+            a.books.add(b) #add the book to it
