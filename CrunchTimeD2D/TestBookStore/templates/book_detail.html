@@ -1,13 +1,12 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-    <p><a href = "{% url 'search' %}"> Back to Search</p>
     <h1>Book Title: {{ book.title }}</h1>
     <br>
     
     <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
     <p><strong>Volume Number:</strong> {{ book.volume_no }}</p>
-    <p><strong>Series Name:</strong> {{ book.series_name }}</p>\
+    <p><strong>Series Name:</strong> {{ book.series_name }}</p>
     <p><strong>List of Authors:</strong></p>
     <ul>
         {% for a in book.get_authors %}
