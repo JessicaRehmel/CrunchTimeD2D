@@ -17,16 +17,14 @@ from django.db.models import Q
 # Create your views here.
 def index(request):
     all_books = Book.objects.all().order_by('title')
-    #all_books = Book.objects.filter(title__contains = "the")
-    #all_books = Book.objects.filter(author__in = Author.objects.filter(surname__contains = "Arisoa")) | Book.objects.filter(author__in = Author.objects.filter(givenName = "Arisoa"))
 
     context = {
         'all_books': all_books,
     }
     return render(request, 'index.html', context = context)
 
-def view_book_detail(request, ID):
-    book = Book.objects.get(bookId=ID)
+def view_book_detail(request, book_id):
+    book = Book.objects.get(book_id=book_id)
 
     context = {
         'book': book,
@@ -44,12 +42,19 @@ class SearchResultsView(generic.ListView):
         book_list = Book.objects.none()
         title_list = Book.objects.none()
         desc_list = Book.objects.none()
+        banned = []
+
+        if len(qlist) > 1:
+            banned = ["a", "the", "and", "or", "an"]
+
+        print(banned)
 
         author_list = Author.objects.filter(surname__icontains = qlist[0])
         if author_list is None:
-            author_list = Author.objects.filter(givenName__icontains = qlist[0])
+            author_list = Author.objects.filter(given_name__icontains = qlist[0])
         else:
-            author_list = author_list | Author.objects.filter(givenName__icontains = qlist[0])
+            author_list = author_list | Author.objects.filter(given_name__icontains = qlist[0])
+        print(author_list)
         title_list = Book.objects.filter(Q(title__icontains=qlist[0]) | Q(subtitle__icontains = qlist[0])).order_by('title')
         #subtitle_list = Book.objects.filter(subtitle__icontains = query).order_by('title')
         #title_list = title_list.union(subtitle_list, all = False)
@@ -70,9 +75,9 @@ class SearchResultsView(generic.ListView):
             #author_list = author_list | Author.objects.filter(surname__icontains = ql)
             print("CHECK1")
             if author_list is None:
-                author_list = Author.objects.filter(givenName__icontains = ql)
+                author_list = Author.objects.filter(given_name__icontains = ql)
             else:
-                author_list = author_list | Author.objects.filter(givenName__icontains = ql)
+                author_list = author_list | Author.objects.filter(given_name__icontains = ql)
             #author_list = author_list | Author.objects.filter(givenName__icontains = ql)
             print("CHECK2")
             if title_list is None:

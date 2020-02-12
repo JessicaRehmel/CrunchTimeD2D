@@ -20,7 +20,7 @@ class Book(models.Model):
         return Author.objects.filter(books = self)
 
     def get_absolute_url(self):
-        return reverse('book_detail', args=[str(self.bookId)])
+        return reverse('book_detail', args=[str(self.book_id)])
 
     def __str__(self):
         return f'{self.title}'
@@ -36,4 +36,4 @@ class Author(models.Model):
         return Book.objects.filter(authors = self)
 
     def __str__(self):
-        return f'{self.surname}, {self.givenName}'
+        return f'{self.surname}, {self.given_name}'
