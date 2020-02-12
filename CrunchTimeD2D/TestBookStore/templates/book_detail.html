@@ -1,25 +1,28 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-    <a href="{% url 'index' %}">Home</a>
-    <br><br>
     <h1>Book Title: {{ book.title }}</h1>
     <br>
-    <p><strong>Price:</strong> {{ book.price }}</p>
-    <p><strong>Release Date:</strong> {{ book.release_date }}</p>
-    <p><strong>Book ID:</strong> {{ book.book_id }}</p>
-    <p><strong>ISBN 13:</strong> {{ book.isbn_13 }}</p>
+    
     <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
-    <p><strong>Series Name:</strong> {{ book.series_name }}</p>
     <p><strong>Volume Number:</strong> {{ book.volume_no }}</p>
-    <p><strong>Format:</strong> {{ book.format }}</p>
+    <p><strong>Series Name:</strong> {{ book.series_name }}</p>
     <p><strong>List of Authors:</strong></p>
     <ul>
         {% for a in book.get_authors %}
         <p>{{ a.given_name }} {{ a.surname }}</p>
         {% endfor %}
     </ul>
-
+    
+    
+    <p><strong>ISBN 13:</strong> {{ book.isbn_13 }}</p>
+    <p><strong>Book ID:</strong> {{ book.book_id }}</p>
+    <p><strong>Format:</strong> {{ book.book_format }}</p>
+    <p><strong>Price:</strong> {{ book.price }}</p>
+    <p><strong>Release Date:</strong> {{ book.release_date }}</p>
+    
+    
+    
     <p><strong>Book Description:</strong></p> 
     <p>{{ book.description }}</p>
 {% endblock %}
