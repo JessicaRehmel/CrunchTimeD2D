@@ -15,15 +15,8 @@
     <p><strong>Format:</strong> {{ book.format }}</p>
     <p><strong>List of Authors:</strong></p>
     <ul>
-<<<<<<< HEAD
         {% for a in book.get_authors %}
         <p>{{ a.givenName }} {{ a.surname }}</p>
-=======
-        {% for author in book.authors %}
-        <li>
-        <p>{{ Author.givenName }}</p>
-        </li>
->>>>>>> master
         {% endfor %}
     </ul>
 

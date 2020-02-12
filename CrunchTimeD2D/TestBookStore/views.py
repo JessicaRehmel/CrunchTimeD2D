@@ -24,18 +24,6 @@ def index(request):
 
 def view_book_detail(request, ID):
     book = Book.objects.get(bookId=ID)
-<<<<<<< HEAD
-=======
-
-    context = {
-        'book': book,
-    }
-    return render(request, 'book_detail.html', context = context)
-""" def search(request):
-    all_books = Book.objects.all().order_by('title')
-    #all_books = Book.objects.filter(title__contains = "the")
-    all_books = Book.objects.filter(author__in = Author.objects.filter(surname__contains = "Arisoa")) | Book.objects.filter(author__in = Author.objects.filter(givenName = "Arisoa"))
->>>>>>> master
 
     context = {
         'book': book,
@@ -49,41 +37,78 @@ class SearchResultsView(generic.ListView):
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         query = self.request.GET.get('q')
-        author_list = Author.objects.filter(surname__icontains = query)
-        author_list = author_list | Author.objects.filter(givenName__icontains = query)
-        title_list = Book.objects.filter(Q(title__icontains=query) | Q(subtitle__icontains = query)).order_by('title')
+        qlist = query.split()
+        book_list = Book.objects.none()
+        title_list = Book.objects.none()
+        desc_list = Book.objects.none()
+
+        author_list = Author.objects.filter(surname__icontains = qlist[0])
+        if author_list is None:
+            author_list = Author.objects.filter(givenName__icontains = qlist[0])
+        else:
+            author_list = author_list | Author.objects.filter(givenName__icontains = qlist[0])
+        title_list = Book.objects.filter(Q(title__icontains=qlist[0]) | Q(subtitle__icontains = qlist[0])).order_by('title')
         #subtitle_list = Book.objects.filter(subtitle__icontains = query).order_by('title')
         #title_list = title_list.union(subtitle_list, all = False)
-        book_list = Book.objects.none()
         # add query authors
         for a in author_list:
-            book_list = book_list.union(a.get_books(), all = False).order_by('title')
-        desc_list = Book.objects.filter(description__icontains = query).order_by('title')
+            if book_list is None:
+                book_list = a.get_books().order_by('title')
+            else:    
+                book_list = book_list | a.get_books().order_by('title')
+        desc_list = Book.objects.filter(description__icontains = qlist[0]).order_by('title')
+
+
+        print("BEFORE SECOND LOOP")
+        for ql in qlist[1:]:
+            print("AFTER SECOND LOOP")
+            author_list = Author.objects.none()
+            author_list = Author.objects.filter(surname__icontains = ql)
+            #author_list = author_list | Author.objects.filter(surname__icontains = ql)
+            print("CHECK1")
+            if author_list is None:
+                author_list = Author.objects.filter(givenName__icontains = ql)
+            else:
+                author_list = author_list | Author.objects.filter(givenName__icontains = ql)
+            #author_list = author_list | Author.objects.filter(givenName__icontains = ql)
+            print("CHECK2")
+            if title_list is None:
+                print("TITLE NONE")
+                title_list = Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql)).order_by('title')
+            else:
+                title_list = title_list | Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql)).order_by('title')
+            #subtitle_list = Book.objects.filter(subtitle__icontains = query).order_by('title')
+            #title_list = title_list.union(subtitle_list, all = False)
+            #book_list = Book.objects.none()
+            # add query authors
+            print("CHECK3")
+            for a in author_list:
+                print("CHECK3.5")
+                print(book_list)
+                if book_list is None:
+                    print("BOOK NONE")
+                    book_list = a.get_books().order_by('title')
+                else:
+                    print("AHDFJLKGJLSGLKDJLSD")
+                    book_list = book_list | a.get_books().order_by('title')
+            print("CHECK4")
+            print(book_list)
+            if desc_list is None:
+                print("DESC NONE")
+                desc_list = Book.objects.filter(description__icontains = ql).order_by('title')
+            else:
+                desc_list = desc_list | Book.objects.filter(description__icontains = ql).order_by('title')
+            print("CHECK5")
+        print("CHECKKKKKKK")
+        print(book_list)
+        print(title_list)
+        print(desc_list)
         context['author_list'] = book_list
         context['title_list'] = title_list
         context['desc_list'] = desc_list
         context['q'] = query
+        print("CHECK6")
         return context
-
-    def get_queryset(self):
-        query = self.request.GET.get('q')
-        author_list = Author.objects.filter(surname__icontains = query)
-        author_list = author_list | Author.objects.filter(givenName__icontains = query)
-        title_list = Book.objects.filter(title__icontains=query)
-        subtitle_list = Book.objects.filter(subtitle__icontains = query)
-        book_list = Book.objects.none()
-        # add query authors
-        for a in author_list:
-            book_list = book_list.union(a.get_books(), all = False)
-        #add query titles
-        #book_list = book_list.union(title_list, all = False)
-        # add query subtitles
-        #book_list = book_list.union(subtitle_list, all = False)
-        # add descriptions
-        desc_list = Book.objects.filter(description__icontains = query)
-        #book_list = book_list.union(desc_list, all = False)
-        t = book_list
-        return t
 
 
 
