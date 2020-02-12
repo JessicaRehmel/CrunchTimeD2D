@@ -4,22 +4,25 @@
     <p><a href = "{% url 'search' %}"> Back to Search</p>
     <h1>Book Title: {{ book.title }}</h1>
     <br>
+    
     <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
-    <p><strong>Volume Number:</strong> {{ book.volumeNo }}</p>
-    <p><strong>Series Name:</strong> {{ book.seriesName }}</p>
+    <p><strong>Volume Number:</strong> {{ book.volume_no }}</p>
+    <p><strong>Series Name:</strong> {{ book.series_name }}</p>\
     <p><strong>List of Authors:</strong></p>
     <ul>
         {% for a in book.get_authors %}
-       
-        <p>{{ a.givenName }} {{a.surname }}</p>
-        
+        <p>{{ a.given_name }} {{ a.surname }}</p>
         {% endfor %}
     </ul>
-    <p><strong>ISBN 13:</strong> {{ book.isbn13 }}</p>
-    <p><strong>Book ID:</strong> {{ book.bookId }}</p>
-    <p><strong>Format:</strong> {{ book.bookFormat }}</p>
+    
+    
+    <p><strong>ISBN 13:</strong> {{ book.isbn_13 }}</p>
+    <p><strong>Book ID:</strong> {{ book.book_id }}</p>
+    <p><strong>Format:</strong> {{ book.book_format }}</p>
     <p><strong>Price:</strong> {{ book.price }}</p>
-    <p><strong>Release Date:</strong> {{ book.releaseDate }}</p>
+    <p><strong>Release Date:</strong> {{ book.release_date }}</p>
+    
+    
     
     <p><strong>Book Description:</strong></p> 
     <p>{{ book.description }}</p>
