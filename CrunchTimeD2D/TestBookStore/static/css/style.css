@@ -2,6 +2,38 @@ p {
     color: black;
 }
 
+h3 {
+    margin-left: 10px;
+}
+
+h4 {
+    margin-left: 10px;
+}
+
+ /* unvisited link */
+ a:link {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* visited link */
+  a:visited {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* mouse over link */
+  a:hover {
+    color: black;
+    text-decoration: none;
+  }
+  
+  /* selected link */
+  a:active {
+    color: black;
+    text-decoration: none;
+  } 
+
 #header {
     background-color: #1a53ff;
     padding-left: 30px;
@@ -14,8 +46,34 @@ p {
     width: 100%;
     height: 1px;
     border-bottom: 1px solid black;
+    margin-left: 10px;
+}
+
+#search-term {
+    color:darkblue
 }
 
 .search{
+    text-align: right;
+}
+
+#entry{
+    margin-left: 10px;
+}
+
+div.spread {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+div.spread span {
+    display: table-cell;
+    text-align: center;
+}
+
+div.spread span:first-child {
+    text-align: left;
+}
+div.spread span:last-child {
     text-align: right;
 }

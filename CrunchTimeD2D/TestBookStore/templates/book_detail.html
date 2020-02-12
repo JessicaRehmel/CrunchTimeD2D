@@ -2,24 +2,31 @@
 
 {% block content %}
     <a href="{% url 'index' %}">Home</a>
+    <br><br>
+    <h1>Book Title: {{ book.title }}</h1>
     <br>
-    <h1>Book Title: Off In The Weeds</h1>
-    <br>
-    <p><strong>Price:</strong>  $4.20</p>
-    <p><strong>Release Date:</strong>  4/20/2020</p>
-    <p><strong>Book ID:</strong>  314159265</p>
-    <p><strong>ISBN 13:</strong>  444-4444-44444-444444-4</p>
-    <p><strong>Subtitle:</strong>  N/A</p>
-    <p><strong>Series Name:</strong>  The Harbert Experience</p>
-    <p><strong>Volume Number:</strong>  1</p>
-    <p><strong>Format:</strong>  Print</p>
-    <p><strong>List of Authors:</strong> (list)</p>
+    <p><strong>Price:</strong> {{ book.price }}</p>
+    <p><strong>Release Date:</strong> {{ book.releaseDate }}</p>
+    <p><strong>Book ID:</strong> {{ book.bookId }}</p>
+    <p><strong>ISBN 13:</strong> {{ book.isbn13 }}</p>
+    <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
+    <p><strong>Series Name:</strong> {{ book.seriesName }}</p>
+    <p><strong>Volume Number:</strong> {{ book.volumeNo }}</p>
+    <p><strong>Format:</strong> {{ book.format }}</p>
+    <p><strong>List of Authors:</strong></p>
     <ul>
+<<<<<<< HEAD
+        {% for a in book.get_authors %}
+        <p>{{ a.givenName }} {{ a.surname }}</p>
+=======
+        {% for author in book.authors %}
         <li>
-        <p>Author</p>
+        <p>{{ Author.givenName }}</p>
         </li>
+>>>>>>> master
+        {% endfor %}
     </ul>
 
     <p><strong>Book Description:</strong></p> 
-    <p>description</p>
+    <p>{{ book.description }}</p>
 {% endblock %}
