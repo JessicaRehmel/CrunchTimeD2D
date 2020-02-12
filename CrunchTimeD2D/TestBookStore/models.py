@@ -2,8 +2,6 @@ from django.db import models
 from django.urls import reverse
 
 
-
-
 class Book(models.Model):
     book_id = models.CharField(max_length=100, primary_key=True)
     isbn_13 = models.CharField(max_length=20)
@@ -26,7 +24,6 @@ class Book(models.Model):
 
     def __str__(self):
         return f'{self.title}'
-
 
 
 class Author(models.Model):
