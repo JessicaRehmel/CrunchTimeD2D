@@ -7,14 +7,45 @@
         <input name="q" type="text" placeholder="Search...">
     </form>
 </div> 
-<h3>Search Results</h3>
+<h3>Search Results for "{{ q }}"</h3>
 <div id ="line"></div>
-  {% for book in object_list %}
-    <a href = "{% url 'view_book_detail' %}">
+<h4><b>Results in author:</b></h4>
+<div id ="line"></div>
+  {% for book in author_list %}
+    <a href = "{% url 'view_book_detail' book.bookId %}">
         <div id = "entry">
             <br>
             <b>{{ book.title }}</b><br>
             <h6>{{ book.subtitle }}</h6>
+            {% for a in book.get_authors %}
+                <i id = "search-term">{{ a.givenName }} {{ a.surname }}</i><br>
+            {% endfor %}
+            <p>Summary: {{ book.description }}</p>
+            <div class="spread">
+                <span>ISBN: {{ book.isbn13 }}</span>
+                <span>Series: {{ book.seriesName }}</span>
+                <span>Volume: {{ book.volumeNo }}</span>
+            </div>
+            <div class="spread">
+                <span>Release Date: {{ book.releaseDate }}</span>
+                <span>Price: {{ book.price }}</span>
+                <span>Book Format: {{ book.bookFormat }}</span>
+            </div>
+            <br>
+            <div id ="line"></div>
+        </div>
+    </a>
+  {% endfor %}
+
+
+  <h4><b>Results in title and subtitle:</b></h4>
+<div id ="line"></div>
+  {% for book in title_list %}
+    <a href = "{% url 'view_book_detail' book.bookId %}">
+        <div id = "entry">
+            <br>
+            <b id = "search-term">{{ book.title }}</b><br>
+            <h6 id = "search-term">{{ book.subtitle }}</h6>
             {% for a in book.get_authors %}
                 <i>{{ a.givenName }} {{ a.surname }}</i><br>
             {% endfor %}
@@ -34,5 +65,35 @@
         </div>
     </a>
   {% endfor %}
+
+
+  <h4><b>Results in description:</b></h4>
+  <div id ="line"></div>
+    {% for book in desc_list %}
+      <a href = "{% url 'view_book_detail' book.bookId %}">
+          <div id = "entry">
+              <br>
+              <b>{{ book.title }}</b><br>
+              <h6>{{ book.subtitle }}</h6>
+              {% for a in book.get_authors %}
+                  <i>{{ a.givenName }} {{ a.surname }}</i><br>
+              {% endfor %}
+              <p id = "search-term">Summary: {{ book.description }}</p>
+              <div class="spread">
+                  <span>ISBN: {{ book.isbn13 }}</span>
+                  <span>Series: {{ book.seriesName }}</span>
+                  <span>Volume: {{ book.volumeNo }}</span>
+              </div>
+              <div class="spread">
+                  <span>Release Date: {{ book.releaseDate }}</span>
+                  <span>Price: {{ book.price }}</span>
+                  <span>Book Format: {{ book.bookFormat }}</span>
+              </div>
+              <br>
+              <div id ="line"></div>
+          </div>
+      </a>
+    {% endfor %}
+  
 
 {% endblock %}
