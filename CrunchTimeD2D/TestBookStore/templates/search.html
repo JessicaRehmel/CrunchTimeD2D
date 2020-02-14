@@ -1,6 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
+<p>{{ page_obj.paginator.num_pages }}</p>
 
 <div class ="search">
     <form action = "{% url 'search' %}" method ="GET">
@@ -40,15 +41,15 @@
         <ul class="pagination">
         {% if page_obj.has_previous %}
             <li>
-                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous</a></span>
+                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous---</a></span>
             </li>
         {% endif %}
             <li class="">
-                <span>---Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}---</span>
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
             </li>
         {% if page_obj.has_next %}
             <li>
-                <span><a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">Next</a></span>
+                <span><a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">---Next</a></span>
             </li>
         {% endif %}
         </ul>
@@ -56,4 +57,5 @@
 {% else %}
     <p>No results found</p>
 {% endif %}
+<br>
 {% endblock %}

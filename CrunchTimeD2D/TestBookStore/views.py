@@ -20,11 +20,15 @@ from django.core.paginator import PageNotAnInteger
 # Create your views here.
 def index(request):
     all_books = Book.objects.all().order_by('title')
+    paginator = Paginator(all_books, 3)
 
-    context = {
+    """ context = {
         'all_books': all_books,
-    }
-    return render(request, 'index.html', context = context)
+    } """
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'index.html', {'page_obj': page_obj})
+    #return render(request, 'index.html', context = context)
 
 def view_book_detail(request, book_id):
     book = Book.objects.get(book_id=book_id)
@@ -38,7 +42,7 @@ class SearchResultsView(generic.ListView):
     model = Book
     template_name = 'search.html'
     paginate_by = 3
-    queryset = Book.objects.all()
+    #queryset = Book.objects.all()
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -112,12 +116,16 @@ class SearchResultsView(generic.ListView):
 
         paginator = Paginator(full_list, self.paginate_by)
         page = self.request.GET.get('page')
-        try:
-            page_list = paginator.page(page)
-        except PageNotAnInteger:
-            page_list = paginator.page(1)
-        except EmptyPage:
-            page_list = paginator.page(paginator.num_pages)
+
+        if len(full_list)/self.paginate_by < page:
+            page_list = paginator(1)
+        else:
+            try:
+                page_list = paginator.page(page)
+            except PageNotAnInteger:
+                page_list = paginator.page(1)
+            except EmptyPage:
+                page_list = paginator.page(paginator.num_pages)
 
         print(page_list)
         print(paginator.num_pages)
