@@ -13,6 +13,9 @@ from rest_framework.reverse import reverse
 import onixcheck, os
 from .models import *
 from django.db.models import Q
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
 
 # Create your views here.
 def index(request):
@@ -34,6 +37,8 @@ def view_book_detail(request, book_id):
 class SearchResultsView(generic.ListView):
     model = Book
     template_name = 'search.html'
+    paginate_by = 3
+    queryset = Book.objects.all()
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -62,7 +67,6 @@ class SearchResultsView(generic.ListView):
             author_list = Author.objects.filter(given_name__icontains = qlist[0])
         else:
             author_list = author_list | Author.objects.filter(given_name__icontains = qlist[0])
-        print(author_list)
         title_list = Book.objects.filter(Q(title__icontains=qlist[0]) | Q(subtitle__icontains = qlist[0])).order_by('title')
         for a in author_list:
             if book_list is None:
@@ -79,9 +83,9 @@ class SearchResultsView(generic.ListView):
             else:
                 author_list = author_list | Author.objects.filter(given_name__icontains = ql)
             if title_list is None:
-                title_list = Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql)).order_by('title')
+                title_list = Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql) | Q(series_name__icontains = ql)).order_by('title')
             else:
-                title_list = title_list | Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql)).order_by('title')
+                title_list = title_list | Book.objects.filter(Q(title__icontains=ql) | Q(subtitle__icontains = ql) | Q(series_name__icontains = ql)).order_by('title')
             for a in author_list:
                 if book_list is None:
                     book_list = a.get_books().order_by('title')
@@ -91,12 +95,39 @@ class SearchResultsView(generic.ListView):
                 desc_list = Book.objects.filter(description__icontains = ql).order_by('title')
             else:
                 desc_list = desc_list | Book.objects.filter(description__icontains = ql).order_by('title')
-        context['author_list'] = book_list
-        context['title_list'] = title_list
-        context['desc_list'] = desc_list
-        context['q'] = query
-        return context
+        
+        #remove duplicates
+        book_list = list(dict.fromkeys(book_list)) 
+        title_list = list(dict.fromkeys(title_list)) 
+        desc_list = list(dict.fromkeys(desc_list)) 
 
+        full_list = book_list
+
+        for i in title_list:
+            full_list.append(i)
+        for i in desc_list:
+            full_list.append(i)
+        full_list = list(dict.fromkeys(full_list)) 
+        #queryset = full_list
+
+        paginator = Paginator(full_list, self.paginate_by)
+        page = self.request.GET.get('page')
+        try:
+            page_list = paginator.page(page)
+        except PageNotAnInteger:
+            page_list = paginator.page(1)
+        except EmptyPage:
+            page_list = paginator.page(paginator.num_pages)
+
+        print(page_list)
+        print(paginator.num_pages)
+        #create context
+        """ context['author_list'] = book_list
+        context['title_list'] = title_list
+        context['desc_list'] = desc_list """
+        context['full_list'] = page_list
+        context['qu'] = query
+        return context
 
 
 @api_view(['POST'])

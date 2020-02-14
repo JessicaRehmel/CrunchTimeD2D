@@ -7,45 +7,15 @@
         <input name="q" type="text" placeholder="Search...">
     </form>
 </div> 
-<h3>Search Results for "{{ q }}"</h3>
+<h3>Search Results for "{{ qu }}"</h3>
 <div id ="line"></div>
-<h4><b>Results in author:</b></h4>
-<div id ="line"></div>
-  {% for book in author_list %}
+{% if full_list %}
+  {% for book in full_list %}
     <a href = "{% url 'view_book_detail' book.book_id %}">
         <div id = "entry">
             <br>
             <b>{{ book.title }}</b><br>
             <h6>{{ book.subtitle }}</h6>
-            {% for a in book.get_authors %}
-                <i id = "search-term">{{ a.given_name }} {{ a.surname }}</i><br>
-            {% endfor %}
-            <p>Summary: {{ book.description }}</p>
-            <div class="spread">
-                <span>ISBN: {{ book.isbn_13 }}</span>
-                <span>Series: {{ book.series_name }}</span>
-                <span>Volume: {{ book.volume_no }}</span>
-            </div>
-            <div class="spread">
-                <span>Release Date: {{ book.release_date }}</span>
-                <span>Price: {{ book.price }}</span>
-                <span>Book Format: {{ book.book_format }}</span>
-            </div>
-            <br>
-            <div id ="line"></div>
-        </div>
-    </a>
-  {% endfor %}
-
-
-  <h4><b>Results in title and subtitle:</b></h4>
-<div id ="line"></div>
-  {% for book in title_list %}
-    <a href = "{% url 'view_book_detail' book.book_id %}">
-        <div id = "entry">
-            <br>
-            <b id = "search-term">{{ book.title }}</b><br>
-            <h6 id = "search-term">{{ book.subtitle }}</h6>
             {% for a in book.get_authors %}
                 <i>{{ a.given_name }} {{ a.surname }}</i><br>
             {% endfor %}
@@ -66,34 +36,24 @@
     </a>
   {% endfor %}
 
-
-  <h4><b>Results in description:</b></h4>
-  <div id ="line"></div>
-    {% for book in desc_list %}
-      <a href = "{% url 'view_book_detail' book.book_id %}">
-          <div id = "entry">
-              <br>
-              <b>{{ book.title }}</b><br>
-              <h6>{{ book.subtitle }}</h6>
-              {% for a in book.get_authors %}
-                  <i>{{ a.given_name }} {{ a.surname }}</i><br>
-              {% endfor %}
-              <p id = "search-term">Summary: {{ book.description }}</p>
-              <div class="spread">
-                  <span>ISBN: {{ book.isbn_13 }}</span>
-                  <span>Series: {{ book.series_name }}</span>
-                  <span>Volume: {{ book.volume_no }}</span>
-              </div>
-              <div class="spread">
-                  <span>Release Date: {{ book.release_date }}</span>
-                  <span>Price: {{ book.price }}</span>
-                  <span>Book Format: {{ book.book_format }}</span>
-              </div>
-              <br>
-              <div id ="line"></div>
-          </div>
-      </a>
-    {% endfor %}
-  
-
+    {% if is_paginated %}
+        <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li>
+                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous</a></span>
+            </li>
+        {% endif %}
+            <li class="">
+                <span>---Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}---</span>
+            </li>
+        {% if page_obj.has_next %}
+            <li>
+                <span><a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">Next</a></span>
+            </li>
+        {% endif %}
+        </ul>
+    {% endif %}
+{% else %}
+    <p>No results found</p>
+{% endif %}
 {% endblock %}
