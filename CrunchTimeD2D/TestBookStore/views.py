@@ -28,7 +28,6 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'index.html', {'page_obj': page_obj})
-    #return render(request, 'index.html', context = context)
 
 def view_book_detail(request, book_id):
     book = Book.objects.get(book_id=book_id)
@@ -42,7 +41,6 @@ class SearchResultsView(generic.ListView):
     model = Book
     template_name = 'search.html'
     paginate_by = 3
-    #queryset = Book.objects.all()
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
@@ -112,27 +110,20 @@ class SearchResultsView(generic.ListView):
         for i in desc_list:
             full_list.append(i)
         full_list = list(dict.fromkeys(full_list)) 
-        #queryset = full_list
 
         paginator = Paginator(full_list, self.paginate_by)
         page = self.request.GET.get('page')
-
-        if len(full_list)/self.paginate_by < page:
-            page_list = paginator(1)
-        else:
-            try:
-                page_list = paginator.page(page)
-            except PageNotAnInteger:
-                page_list = paginator.page(1)
-            except EmptyPage:
-                page_list = paginator.page(paginator.num_pages)
+        
+        try:
+            page_list = paginator.page(page)
+        except PageNotAnInteger:
+            page_list = paginator.page(1)
+        except EmptyPage:
+            page_list = paginator.page(paginator.num_pages)
 
         print(page_list)
         print(paginator.num_pages)
         #create context
-        """ context['author_list'] = book_list
-        context['title_list'] = title_list
-        context['desc_list'] = desc_list """
         context['full_list'] = page_list
         context['qu'] = query
         return context
