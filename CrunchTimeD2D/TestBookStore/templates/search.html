@@ -7,10 +7,30 @@
     </form>
 </div> 
 <h3>Search Results for "{{ qu }}"</h3>
+<div class="pagination">
+    {% if page_obj.has_other_pages %}
+        <ul class="pagination">
+        {% if page_obj.has_previous %}
+            <li>
+                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous</a>&nbsp;&nbsp;&nbsp;</span>
+            </li>
+        {% endif %}
+            <li class="">
+                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+        {% if page_obj.has_next %}
+            <li>
+                <span>&nbsp;&nbsp;&nbsp;<a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">Next</a></span>
+            </li>
+        {% endif %}
+        </ul>
+    {% endif %}
+</div>
+<br>
 <div id ="line"></div>
-{% if full_list %}
-  {% for book in full_list %}
-    <a href = "{% url 'view_book_detail' book.book_id %}">
+{% if page_obj %}
+  {% for book in page_obj %}
+    <a class="noColor" href = "{% url 'view_book_detail' book.book_id %}">
         <div id = "entry">
             <br>
             <b>{{ book.title }}</b><br>
@@ -33,25 +53,9 @@
             <div id ="line"></div>
         </div>
     </a>
-  {% endfor %}
+    {% endfor %}
 
-    {% if page_obj.has_other_pages %}
-        <ul class="pagination">
-        {% if page_obj.has_previous %}
-            <li>
-                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous---</a></span>
-            </li>
-        {% endif %}
-            <li class="">
-                <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-            </li>
-        {% if page_obj.has_next %}
-            <li>
-                <span><a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">---Next</a></span>
-            </li>
-        {% endif %}
-        </ul>
-    {% endif %}
+    
 {% else %}
     <p>No results found</p>
 {% endif %}

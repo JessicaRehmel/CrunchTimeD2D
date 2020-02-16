@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
-import onixcheck, os
+import onixcheck, os, html
 from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator
@@ -121,11 +121,9 @@ class SearchResultsView(generic.ListView):
         except EmptyPage:
             page_list = paginator.page(paginator.num_pages)
 
-        print(page_list)
-        print(paginator.num_pages)
         #create context
-        context['full_list'] = page_list
         context['qu'] = query
+        context['page_obj'] = page_list
         return context
 
 
@@ -150,7 +148,7 @@ def submit_onix(request):
 
 @api_view(['POST'])
 def process_onix(request):
-    with open("onix.xml") as f:
+    with open("onix.xml", "rb") as f:
         xml = f.read()
 
     root = etree.fromstring(xml)
@@ -161,14 +159,23 @@ def process_onix(request):
         book = Book()
 
         #info from direct children of the product object
-        book.book_id = p.xpath("./RecordReference[1]")[0].text
+        book.book_id = p.xpath("./RecordReference[1]")[0].text[24:]
         book.isbn_13 = p.xpath("./ProductIdentifier[ProductIDType='15']/IDValue")[0].text
 
         #info from DescriptiveDetail child of product object
-        book.title = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/TitleText")[0].text
-        book.subtitle = p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text
-        book.series_name = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text
-        book.volume_no = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
+        book.title = unescape(p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/TitleText")[0].text)
+        try:
+            book.subtitle = unescape(p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text)
+        except:
+            book.subtitle = "N/A"
+        try:
+            book.series_name = unescape(p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text)
+        except:
+            book.series_name = "N/A"
+        try:
+            book.volume_no = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
+        except:
+            book.volume_no = "N/A"
         book.book_format = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text
 
         #authors
@@ -177,35 +184,87 @@ def process_onix(request):
         for c in contribs:
             author = Author()
 
-            author.author_id = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
+            try:
+                author.author_id = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
+            except:
+                author.author_id = "N/A"
             
             names = c.xpath("./PersonName")[0].text
-            author.given_name = names.split()[0]
-            author.surname = names.split()[1]
+            author.given_name = unescape(names.split()[0])
+            try:
+                author.surname = unescape(names.split()[1])
+            except:
+                author.surname = "N/A"
 
             author_list.append(author)
-            
-        book.authors = author_list            
+            author.save()           
 
         #info from CollateralDetail child of product object
-        book.description = p.xpath("./CollateralDetail/TextContent[TextType='03']/Text")[0].text
+        try:
+            book.description = unescape(p.xpath("./CollateralDetail/TextContent[TextType='03']/Text")[0].text)
+        except:
+            book.description = "N/A"
 
         #info from PublishingDetail child of product object
         book.publisher = p.xpath("./PublishingDetail/Publisher[PublishingRole='01']/PublisherName")[0].text
 
         #info from ProductSupply child of product object
-        book.release_date = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
+        try:
+            release_date = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
+            book.release_date = release_date[0:4] + '-' + release_date[4:6] + '-' + release_date[6:] + ' 00:00'
+        except:
+            book.release_date = "0000-01-01 00:00"
         book.price = p.xpath("./ProductSupply/SupplyDetail/Price[CurrencyCode='USD']/PriceAmount")[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
 
         #add the book to the list
         book_list.append(book)
+        book.save()
+        book.authors.add(*author_list) 
     
 
     for b in book_list:        
         b.save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
         
-        for a in b.authors:
+        for a in b.authors.all():
             a.save() #ditto for author_id
             
             b.authors.add(a) #add it to the book
             a.books.add(b) #add the book to it
+
+    return Response("", status=status.HTTP_201_CREATED)
+
+def unescape(hstr):
+    pstr = ""
+    delay = 0
+    for i in range(0, 2):
+        for i in range(0, len(hstr)):
+            if delay == 0:
+                try:
+                    if hstr[i] == '&':
+                        if hstr[i:i+4] == "&lt;":
+                            pstr += "<"
+                            delay = 3
+                        elif hstr[i:i+4] == "&gt;":
+                            pstr += ">"
+                            delay = 3
+                        elif hstr[i:i+5] == "&amp;":
+                            pstr += "&"
+                            delay = 4
+                        elif hstr[i:i+6] == "&quot;":
+                            pstr += '"'
+                            delay = 5
+                        elif hstr[i:i+6] == "&apos;":
+                            pstr += "'"
+                            delay = 5
+                        elif hstr[i:i+2] == "&#":
+                            pstr += chr(int(hstr[i+2:i+6]))
+                            delay = 6
+                        else:
+                            pstr += hstr[i]
+                    else:
+                        pstr += hstr[i]
+                except:
+                    pstr += str(hstr[i])
+            else:
+                delay -= 1
+    return pstr

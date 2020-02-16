@@ -5,51 +5,49 @@
         <form action = "{% url 'search' %}" method ="GET">
             <input name="q" type="text" placeholder="Search...">
         </form>
-    </div> 
-        <h3>Book List</h3>
-        <div id ="line"></div>
-        {% for book in page_obj %}
-        <a href = "{% url 'view_book_detail' book.book_id %}">
-            <div id = "entry">
-                <br>
-                <b>{{ book.title }}</b><br>
-                <h6>{{ book.subtitle }}</h6>
-                {% for a in book.get_authors %}
-                    <i>{{ a.given_name }} {{ a.surname }}</i><br>
-                {% endfor %}
-                <p>Summary: {{ book.description }}</p>
-                <div class="spread">
-                    <span>ISBN: {{ book.isbn_13 }}</span>
-                    <span>Series: {{ book.series_name }}</span>
-                    <span>Volume: {{ book.volume_no }}</span>
-                </div>
-                <div class="spread">
-                    <span>Release Date: {{ book.release_date }}</span>
-                    <span>Price: {{ book.price }}</span>
-                    <span>Book Format: {{ book.book_format }}</span>
-                </div>
-                <br>
-                <div id ="line"></div>
-            </div>
-        </a>
-        {% endfor %}
-        <br>
-
-
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}">Previous---</a>
-                {% endif %}
-        
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-        
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">---Next</a>
-                {% endif %}
+    </div>
+    <h3>Book List</h3>
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}">Previous</a>&nbsp;&nbsp;&nbsp;
+            {% endif %}
+    
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
             </span>
+    
+            {% if page_obj.has_next %}
+                &nbsp;&nbsp;&nbsp;<a href="?page={{ page_obj.next_page_number }}">Next</a>
+            {% endif %}
+        </span>
+    </div>
+    <br>
+    <div id ="line"></div>
+    {% for book in page_obj %}
+    <a class="noColor" href = "{% url 'view_book_detail' book.book_id %}">
+        <div id = "entry">
+            <br>
+            <b>{{ book.title }}</b><br>
+            <h6>{{ book.subtitle }}</h6>
+            {% for a in book.get_authors %}
+                <i>{{ a.given_name }} {{ a.surname }}</i><br>
+            {% endfor %}
+            <p>Summary: {{ book.description }}</p>
+            <div class="spread">
+                <span>ISBN: {{ book.isbn_13 }}</span>
+                <span>Series: {{ book.series_name }}</span>
+                <span>Volume: {{ book.volume_no }}</span>
+            </div>
+            <div class="spread">
+                <span>Release Date: {{ book.release_date }}</span>
+                <span>Price: {{ book.price }}</span>
+                <span>Book Format: {{ book.book_format }}</span>
+            </div>
+            <br>
+            <div id ="line"></div>
         </div>
-        <br>
+    </a>
+    {% endfor %}
+    <br>
 {% endblock %}
