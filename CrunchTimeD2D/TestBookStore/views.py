@@ -129,14 +129,14 @@ class SearchResultsView(generic.ListView):
 
 @api_view(['POST'])
 def submit_onix(request):
-    f = open("tempOnix.xml", "w")
-    f.write(request.POST['data'])
+    f = open("tempOnix.xml", "wb")
+    f.write(request.POST['data'].encode("utf-8"))
     f.close()
     try:
         errors = onixcheck.validate("tempOnix.xml")
         if (len(errors) == 0):
-            f = open("onix.xml", "w")
-            f.write(request.POST['data'])
+            f = open("onix.xml", "wb")
+            f.write(request.POST['data'].encode("utf-8"))
             f.close()
             os.remove("tempOnix.xml")
             return Response("", status=status.HTTP_201_CREATED)
@@ -154,7 +154,9 @@ def process_onix(request):
     root = etree.fromstring(xml)
 
     book_list = []
+    author_list_list = []
     products = root.xpath("//Product")
+    print(products)
     for p in products:
         book = Book()
 
@@ -197,7 +199,8 @@ def process_onix(request):
                 author.surname = "N/A"
 
             author_list.append(author)
-            author.save()           
+            author.save()
+            author_list_list.append(author_list)       
 
         #info from CollateralDetail child of product object
         try:
@@ -218,18 +221,14 @@ def process_onix(request):
 
         #add the book to the list
         book_list.append(book)
-        book.save()
-        book.authors.add(*author_list) 
     
 
-    for b in book_list:        
-        b.save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
-        
-        for a in b.authors.all():
+    for i in range(0, len(book_list)):        
+        book_list[i].save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
+        book_list[i].add(*author_list_list[i])
+        for a in author_list_list[i]:
             a.save() #ditto for author_id
-            
-            b.authors.add(a) #add it to the book
-            a.books.add(b) #add the book to it
+            a.books.add(book_list[i]) #add the book to it
 
     return Response("", status=status.HTTP_201_CREATED)
 
@@ -268,3 +267,4 @@ def unescape(hstr):
             else:
                 delay -= 1
     return pstr
+

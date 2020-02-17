@@ -38,7 +38,9 @@
             {% for a in book.get_authors %}
                 <i>{{ a.given_name }} {{ a.surname }}</i><br>
             {% endfor %}
+            {% autoescape off %}
             <p>Summary: {{ book.description }}</p>
+            {% endautoescape %}
             <div class="spread">
                 <span>ISBN: {{ book.isbn_13 }}</span>
                 <span>Series: {{ book.series_name }}</span>
