@@ -55,22 +55,24 @@ class SearchResultsView(generic.ListView):
         for ql in qlist:
             fullQ = fullQ + ql
             fullQ = fullQ + " "
-        fullQ = fullQ[:len(fullQ) - 2]
+        fullQ = fullQ[:len(fullQ) - 1]
         print(fullQ)
         exact_list = Book.objects.filter(Q(title__icontains=fullQ) | Q(subtitle__icontains = fullQ)).order_by('title')
 
         if len(qlist) > 1:
-            banned = ["a", "the", "and", "an", "or", "on"]
+            banned = ["a", "the", "and", "an", "or", "on", "of", "in"]
 
         allbanned = 1
         for ql in qlist:
-            if ql not in banned:
+            if ql.lower() not in banned:
                 allbanned = 0
 
         if allbanned == 0:
             for ql in qlist[:]:
-                if ql in banned:
+                if ql.lower() in banned:
                     qlist.remove(ql)
+
+        print(qlist)
 
         #get first set of results
         author_list = Author.objects.filter(surname__icontains = qlist[0])
