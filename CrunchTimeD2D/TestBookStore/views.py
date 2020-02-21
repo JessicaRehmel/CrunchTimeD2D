@@ -28,6 +28,7 @@ def index(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return render(request, 'index.html', {'page_obj': page_obj})
+    #return render(request, 'index.html', context = context)
 
 def view_book_detail(request, book_id):
     book = Book.objects.get(book_id=book_id)
@@ -51,8 +52,16 @@ class SearchResultsView(generic.ListView):
         desc_list = Book.objects.none()
         banned = []
 
+        fullQ = ""
+        for ql in qlist:
+            fullQ = fullQ + ql
+            fullQ = fullQ + " "
+        fullQ = fullQ[:len(fullQ) - 2]
+        print(fullQ)
+        exact_list = Book.objects.filter(Q(title__icontains=fullQ) | Q(subtitle__icontains = fullQ)).order_by('title')
+
         if len(qlist) > 1:
-            banned = ["a", "the", "and", "an"]
+            banned = ["a", "the", "and", "an", "or", "on"]
 
         allbanned = 1
         for ql in qlist:
@@ -64,6 +73,7 @@ class SearchResultsView(generic.ListView):
                 if ql in banned:
                     qlist.remove(ql)
 
+        #get first set of results
         author_list = Author.objects.filter(surname__icontains = qlist[0])
         if author_list is None:
             author_list = Author.objects.filter(given_name__icontains = qlist[0])
@@ -77,6 +87,7 @@ class SearchResultsView(generic.ListView):
                 book_list = book_list | a.get_books().order_by('title')
         desc_list = Book.objects.filter(description__icontains = qlist[0]).order_by('title')
 
+        #get rest of results
         for ql in qlist[1:]:
             author_list = Author.objects.none()
             author_list = Author.objects.filter(surname__icontains = ql)
@@ -99,17 +110,19 @@ class SearchResultsView(generic.ListView):
                 desc_list = desc_list | Book.objects.filter(description__icontains = ql).order_by('title')
         
         #remove duplicates
+        exact_list = list(dict.fromkeys(exact_list))
         book_list = list(dict.fromkeys(book_list)) 
         title_list = list(dict.fromkeys(title_list)) 
         desc_list = list(dict.fromkeys(desc_list)) 
 
-        full_list = book_list
-
+        full_list = exact_list
+        for i in book_list:
+            full_list.append(i)
         for i in title_list:
             full_list.append(i)
         for i in desc_list:
             full_list.append(i)
-        full_list = list(dict.fromkeys(full_list)) 
+        full_list = list(dict.fromkeys(full_list))
 
         paginator = Paginator(full_list, self.paginate_by)
         page = self.request.GET.get('page')
@@ -121,8 +134,6 @@ class SearchResultsView(generic.ListView):
         except EmptyPage:
             page_list = paginator.page(paginator.num_pages)
 
-        print(page_list)
-        print(paginator.num_pages)
         #create context
         context['full_list'] = page_list
         context['qu'] = query
@@ -137,7 +148,7 @@ def submit_onix(request):
     try:
         errors = onixcheck.validate("tempOnix.xml")
         if (len(errors) == 0):
-            f = open("onix.xml", "w")
+            f = open("onix.txt", "w")
             f.write(request.POST['data'])
             f.close()
             os.remove("tempOnix.xml")
@@ -150,15 +161,18 @@ def submit_onix(request):
 
 @api_view(['POST'])
 def process_onix(request):
-    with open("onix.xml") as f:
+    with open("onix.txt", mode='rb') as f:
         xml = f.read()
 
     root = etree.fromstring(xml)
+    print(root.getchildren()[1])
 
     book_list = []
     products = root.xpath("//Product")
+    print(products)
     for p in products:
         book = Book()
+        print("check")
 
         #info from direct children of the product object
         book.book_id = p.xpath("./RecordReference[1]")[0].text
@@ -209,3 +223,5 @@ def process_onix(request):
             
             b.authors.add(a) #add it to the book
             a.books.add(b) #add the book to it
+
+    return Response("", status=status.HTTP_201_CREATED)
