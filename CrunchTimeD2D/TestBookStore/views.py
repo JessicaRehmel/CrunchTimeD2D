@@ -167,48 +167,51 @@ def process_onix(request):
         xml = f.read()
 
     root = etree.fromstring(xml)
-    print(root.getchildren()[1])
+    ns = {}
+    try:
+        ns = {"onix": root.tag[1:len(root.tag) - len("ONIXMessage") - 1]}
+    except:
+        ns = {}
 
     book_list = []
     author_list_list = []
-    products = root.xpath("//Product")
-    print(products)
+    products = root.xpath("//onix:Product", namespaces = ns)
     for p in products:
         book = Book()
         print("check")
 
         #info from direct children of the product object
-        book.book_id = p.xpath("./RecordReference[1]")[0].text[24:]
-        book.isbn_13 = p.xpath("./ProductIdentifier[ProductIDType='15']/IDValue")[0].text
+        book.book_id = p.xpath("./onix:RecordReference[1]", namespaces = ns)[0].text[24:]
+        book.isbn_13 = p.xpath("./onix:ProductIdentifier[onix:ProductIDType='15']/onix:IDValue", namespaces = ns)[0].text
 
         #info from DescriptiveDetail child of product object
-        book.title = unescape(p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/TitleText")[0].text)
+        book.title = unescape(p.xpath("./onix:DescriptiveDetail/onix:TitleDetail[onix:TitleType='01']/onix:TitleElement/onix:TitleText", namespaces = ns)[0].text)
         try:
-            book.subtitle = unescape(p.xpath("./DescriptiveDetail/TitleDetail[TitleType='01']/TitleElement/Subtitle")[0].text)
+            book.subtitle = unescape(p.xpath("./onix:DescriptiveDetail/onix:TitleDetail[onix:TitleType='01']/onix:TitleElement/onix:Subtitle", namespaces = ns)[0].text)
         except:
             book.subtitle = "N/A"
         try:
-            book.series_name = unescape(p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='02']/TitleText")[0].text)
+            book.series_name = unescape(p.xpath("./onix:DescriptiveDetail/onix:Collection/onix:TitleDetail[onix:TitleType='01']/onix:TitleElement[onix:TitleElementLevel='02']/onix:TitleText", namespaces = ns)[0].text)
         except:
             book.series_name = "N/A"
         try:
-            book.volume_no = p.xpath("./DescriptiveDetail/Collection/TitleDetail[TitleType='01']/TitleElement[TitleElementLevel='01']/PartNumber")[0].text
+            book.volume_no = p.xpath("./onix:DescriptiveDetail/onix:Collection/onix:TitleDetail[onix:TitleType='01']/onix:TitleElement[onix:TitleElementLevel='01']/onix:PartNumber", namespaces = ns)[0].text
         except:
             book.volume_no = "N/A"
-        book.book_format = p.xpath("./DescriptiveDetail/ProductFormDetail")[0].text
+        book.book_format = p.xpath("./onix:DescriptiveDetail/onix:ProductFormDetail", namespaces = ns)[0].text
 
         #authors
         author_list = []
-        contribs = p.xpath("./DescriptiveDetail/Contributor")
+        contribs = p.xpath("./onix:DescriptiveDetail/onix:Contributor", namespaces = ns)
         for c in contribs:
             author = Author()
 
             try:
-                author.author_id = c.xpath("./NameIdentifier[NameIDType='01']/IDValue")[0].text
+                author.author_id = c.xpath("./onix:NameIdentifier[onix:NameIDType='01']/onix:IDValue", namespaces = ns)[0].text
             except:
                 author.author_id = "N/A"
             
-            names = c.xpath("./PersonName")[0].text
+            names = c.xpath("./onix:PersonName", namespaces = ns)[0].text
             author.given_name = unescape(names.split()[0])
             try:
                 author.surname = unescape(names.split()[1])
@@ -221,20 +224,20 @@ def process_onix(request):
 
         #info from CollateralDetail child of product object
         try:
-            book.description = unescape(p.xpath("./CollateralDetail/TextContent[TextType='03']/Text")[0].text)
+            book.description = unescape(p.xpath("./onix:CollateralDetail/onix:TextContent[onix:TextType='03']/onix:Text", namespaces = ns)[0].text)
         except:
             book.description = "N/A"
 
         #info from PublishingDetail child of product object
-        book.publisher = p.xpath("./PublishingDetail/Publisher[PublishingRole='01']/PublisherName")[0].text
+        book.publisher = p.xpath("./onix:PublishingDetail/onix:Publisher[onix:PublishingRole='01']/onix:PublisherName", namespaces = ns)[0].text
 
         #info from ProductSupply child of product object
         try:
-            release_date = p.xpath("./ProductSupply/MarketPublishingDetail/MarketDate/Date")[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
+            release_date = p.xpath("./onix:ProductSupply/onix:MarketPublishingDetail/onix:MarketDate/onix:Date", namespaces = ns)[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
             book.release_date = release_date[0:4] + '-' + release_date[4:6] + '-' + release_date[6:] + ' 00:00'
         except:
             book.release_date = "0000-01-01 00:00"
-        book.price = p.xpath("./ProductSupply/SupplyDetail/Price[CurrencyCode='USD']/PriceAmount")[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
+        book.price = p.xpath("./onix:ProductSupply/onix:SupplyDetail/onix:Price[onix:CurrencyCode='USD']/onix:PriceAmount", namespaces = ns)[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
 
         #add the book to the list
         book_list.append(book)
@@ -242,7 +245,7 @@ def process_onix(request):
 
     for i in range(0, len(book_list)):        
         book_list[i].save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
-        book_list[i].add(*author_list_list[i])
+        book_list[i].authors.add(*author_list_list[i])
         for a in author_list_list[i]:
             a.save() #ditto for author_id
             a.books.add(book_list[i]) #add the book to it
@@ -253,6 +256,7 @@ def unescape(hstr):
     pstr = ""
     delay = 0
     for i in range(0, 2):
+        pstr = ""
         for i in range(0, len(hstr)):
             if delay == 0:
                 try:
@@ -283,5 +287,6 @@ def unescape(hstr):
                     pstr += str(hstr[i])
             else:
                 delay -= 1
+        hstr = pstr
     return pstr
 
