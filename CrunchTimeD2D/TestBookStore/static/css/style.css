@@ -11,25 +11,25 @@ h4 {
 }
 
  /* unvisited link */
- a:link {
+ .noColor:link {
     color: black;
     text-decoration: none;
   }
   
   /* visited link */
-  a:visited {
+  .noColor:visited {
     color: black;
     text-decoration: none;
   }
   
   /* mouse over link */
-  a:hover {
+  .noColor:hover {
     color: black;
     text-decoration: none;
   }
   
   /* selected link */
-  a:active {
+  .noColor:active {
     color: black;
     text-decoration: none;
   } 
@@ -59,6 +59,14 @@ h4 {
 
 #entry{
     margin-left: 10px;
+}
+
+.pagination{
+    float: right;
+}
+
+.superTitle {
+    width: 100%
 }
 
 div.spread {
