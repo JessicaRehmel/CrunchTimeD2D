@@ -51,19 +51,30 @@ class SearchResultsView(generic.ListView):
         desc_list = Book.objects.none()
         banned = []
 
+        fullQ = ""
+        for ql in qlist:
+            fullQ = fullQ + ql
+            fullQ = fullQ + " "
+        fullQ = fullQ[:len(fullQ) - 1]
+        print(fullQ)
+        exact_list = Book.objects.filter(Q(title__icontains=fullQ) | Q(subtitle__icontains = fullQ)).order_by('title')
+
         if len(qlist) > 1:
-            banned = ["a", "the", "and", "an"]
+            banned = ["a", "the", "and", "an", "or", "on", "of", "in"]
 
         allbanned = 1
         for ql in qlist:
-            if ql not in banned:
+            if ql.lower() not in banned:
                 allbanned = 0
 
         if allbanned == 0:
             for ql in qlist[:]:
-                if ql in banned:
+                if ql.lower() in banned:
                     qlist.remove(ql)
 
+        print(qlist)
+
+        #get first set of results
         author_list = Author.objects.filter(surname__icontains = qlist[0])
         if author_list is None:
             author_list = Author.objects.filter(given_name__icontains = qlist[0])
@@ -77,6 +88,7 @@ class SearchResultsView(generic.ListView):
                 book_list = book_list | a.get_books().order_by('title')
         desc_list = Book.objects.filter(description__icontains = qlist[0]).order_by('title')
 
+        #get rest of results
         for ql in qlist[1:]:
             author_list = Author.objects.none()
             author_list = Author.objects.filter(surname__icontains = ql)
@@ -99,17 +111,19 @@ class SearchResultsView(generic.ListView):
                 desc_list = desc_list | Book.objects.filter(description__icontains = ql).order_by('title')
         
         #remove duplicates
+        exact_list = list(dict.fromkeys(exact_list))
         book_list = list(dict.fromkeys(book_list)) 
         title_list = list(dict.fromkeys(title_list)) 
         desc_list = list(dict.fromkeys(desc_list)) 
 
-        full_list = book_list
-
+        full_list = exact_list
+        for i in book_list:
+            full_list.append(i)
         for i in title_list:
             full_list.append(i)
         for i in desc_list:
             full_list.append(i)
-        full_list = list(dict.fromkeys(full_list)) 
+        full_list = list(dict.fromkeys(full_list))
 
         paginator = Paginator(full_list, self.paginate_by)
         page = self.request.GET.get('page')
@@ -122,6 +136,7 @@ class SearchResultsView(generic.ListView):
             page_list = paginator.page(paginator.num_pages)
 
         #create context
+        context['full_list'] = page_list
         context['qu'] = query
         context['page_obj'] = page_list
         return context
