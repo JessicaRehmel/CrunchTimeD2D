@@ -23,6 +23,8 @@
     
     
     
-    <p><strong>Book Description:</strong></p> 
+    <p><strong>Book Description:</strong></p>
+    {% autoescape off %}
     <p>{{ book.description }}</p>
+    {% endautoescape %}
 {% endblock %}
