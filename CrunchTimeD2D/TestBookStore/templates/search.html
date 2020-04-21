@@ -3,6 +3,13 @@
 {% block content %}
 <div class ="search">
     <form action = "{% url 'search' %}" method ="GET">
+        <label>Search by:</label>
+            <select name="cat">
+                <option value="any">Any</option>
+                <option value="title">Title</option>
+                <option value="author">Author</option>
+                <option value="isbn">ISBN</option>
+              </select>
         <input name="q" type="text" placeholder="Search...">
     </form>
 </div> 
@@ -12,7 +19,7 @@
         <ul class="pagination">
         {% if page_obj.has_previous %}
             <li>
-                <span><a href="?q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous</a>&nbsp;&nbsp;&nbsp;</span>
+                <span><a href="?cat={{ cat }}&q={{ qu }}&page={{ page_obj.previous_page_number }}">Previous</a>&nbsp;&nbsp;&nbsp;</span>
             </li>
         {% endif %}
             <li class="">
@@ -20,7 +27,7 @@
             </li>
         {% if page_obj.has_next %}
             <li>
-                <span>&nbsp;&nbsp;&nbsp;<a href="?q={{ qu }}&page={{ page_obj.next_page_number }}">Next</a></span>
+                <span>&nbsp;&nbsp;&nbsp;<a href="?cat={{ cat }}&q={{ qu }}&page={{ page_obj.next_page_number }}">Next</a></span>
             </li>
         {% endif %}
         </ul>
