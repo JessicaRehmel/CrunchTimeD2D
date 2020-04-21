@@ -211,7 +211,6 @@ def process_onix(request):
         ns = {}
 
     book_list = []
-    author_list_list = []
     products = root.xpath("//onix:Product", namespaces = ns)
     for p in products:
         book = Book()
@@ -234,29 +233,7 @@ def process_onix(request):
             book.volume_no = p.xpath("./onix:DescriptiveDetail/onix:Collection/onix:TitleDetail[onix:TitleType='01']/onix:TitleElement[onix:TitleElementLevel='01']/onix:PartNumber", namespaces = ns)[0].text
         except:
             book.volume_no = "N/A"
-        book.book_format = p.xpath("./onix:DescriptiveDetail/onix:ProductFormDetail", namespaces = ns)[0].text
-
-        #authors
-        author_list = []
-        contribs = p.xpath("./onix:DescriptiveDetail/onix:Contributor", namespaces = ns)
-        for c in contribs:
-            author = Author()
-
-            try:
-                author.author_id = c.xpath("./onix:NameIdentifier[onix:NameIDType='01']/onix:IDValue", namespaces = ns)[0].text
-            except:
-                author.author_id = "N/A"
-            
-            names = c.xpath("./onix:PersonName", namespaces = ns)[0].text
-            author.given_name = unescape(names.split()[0])
-            try:
-                author.surname = unescape(names.split()[1])
-            except:
-                author.surname = "N/A"
-
-            author.save()
-            author_list.append(author)
-            author_list_list.append(author_list)       
+        book.book_format = p.xpath("./onix:DescriptiveDetail/onix:ProductFormDetail", namespaces = ns)[0].text    
 
         #info from CollateralDetail child of product object
         try:
@@ -270,21 +247,31 @@ def process_onix(request):
         #info from ProductSupply child of product object
         try:
             release_date = p.xpath("./onix:ProductSupply/onix:MarketPublishingDetail/onix:MarketDate/onix:Date", namespaces = ns)[0].text #this is a string in YYYYMMDD format and may or may not need conversion?
-            book.release_date = release_date[0:4] + '-' + release_date[4:6] + '-' + release_date[6:] + ' 00:00'
+            book.release_date = release_date[0:4] + '-' + release_date[4:6] + '-' + release_date[6:] + ' 00:00:00.000+00:00'
         except:
             book.release_date = "0000-01-01 00:00"
-        book.price = p.xpath("./onix:ProductSupply/onix:SupplyDetail/onix:Price[onix:CurrencyCode='USD']/onix:PriceAmount", namespaces = ns)[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer         
+        book.price = p.xpath("./onix:ProductSupply/onix:SupplyDetail/onix:Price[onix:CurrencyCode='USD']/onix:PriceAmount", namespaces = ns)[0].text #I don't feel right about this line, but I can't articulate WHY - Jennifer      
 
-        #add the book to the list
-        book_list.append(book)
-    
+        #save book
+        book.save()
+        
+        #authors
+        contribs = p.xpath("./onix:DescriptiveDetail/onix:Contributor", namespaces = ns)
+        for c in contribs:
+            author = Author()
+            
+            author.author_id = c.xpath("./onix:PersonName", namespaces = ns)[0].text
+            author.given_name = unescape(author.author_id.split()[0])
+            try:
+                author.surname = unescape(author.author_id.split()[1])
+            except:
+                author.surname = author.given_name
+                author.given_name = ""
 
-    for i in range(0, len(book_list)):        
-        book_list[i].save() #Django is smart; in theory, if it sees a book_id it already has then it should update and otherwise it should insert
-        book_list[i].authors.add(*author_list_list[i])
-        for a in author_list_list[i]:
-            a.save() #ditto for author_id
-            a.books.add(book_list[i]) #add the book to it
+            author.save()
+            book.authors.add(author)
+            author.books.add(book)
+
 
     return Response("", status=status.HTTP_201_CREATED)
 
