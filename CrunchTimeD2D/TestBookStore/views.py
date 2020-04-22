@@ -19,6 +19,7 @@ from django.core.paginator import PageNotAnInteger
 
 # Create your views here.
 def index(request):
+    """Go to book list page"""
     all_books = Book.objects.all().order_by('title')
     paginator = Paginator(all_books, 3)
 
@@ -31,6 +32,7 @@ def index(request):
 
 
 def view_book_detail(request, book_id):
+    """Go to book detail page"""
     book = Book.objects.get(book_id=book_id)
 
     context = {
@@ -40,11 +42,13 @@ def view_book_detail(request, book_id):
 
 
 class SearchResultsView(generic.ListView):
+    """Display results of search query"""
     model = Book
     template_name = 'search.html'
     paginate_by = 3
 
     def get_context_data(self, *args, **kwargs):
+        """Return context data of search query"""
         context = super().get_context_data(*args, **kwargs)
         query = self.request.GET.get('q')
         cat = self.request.GET.get('cat')
@@ -182,6 +186,7 @@ class SearchResultsView(generic.ListView):
 
 @api_view(['POST'])
 def submit_onix(request):
+    """Accept API Post with Onix book data, store in file"""
     f = open("tempOnix.xml", "wb")
     f.write(request.POST['data'].encode("utf-8"))
     f.close()
@@ -202,6 +207,7 @@ def submit_onix(request):
 
 @api_view(['POST'])
 def process_onix(request):
+    """Accept API Post to process stored Onix file"""
     with open("onix.xml", "rb") as f:
         xml = f.read()
 
@@ -281,6 +287,7 @@ def process_onix(request):
 
 
 def unescape(hstr):
+    """Translate HTML escape sequences"""
     pstr = ""
     delay = 0
     for i in range(0, 2):
@@ -320,6 +327,7 @@ def unescape(hstr):
 
 
 def convert_to_isbn_13(isbn_10):
+    """Convert ISBN10 or ISBN13 to ISBN13"""
     isbn_13 = "978"
     for digit in isbn_10[:9]:
         isbn_13 = isbn_13 + digit
@@ -340,6 +348,7 @@ def convert_to_isbn_13(isbn_10):
 
 
 def handle_if_none(list, query):
+    """Handle empty queries"""
     if list is None:
         list = query
     else:

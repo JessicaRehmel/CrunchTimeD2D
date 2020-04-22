@@ -3,6 +3,7 @@ from django.urls import reverse
 
 
 class Book(models.Model):
+    """Book details"""
     book_id = models.CharField(max_length=100, primary_key=True)
     isbn_13 = models.CharField(max_length=20)
     title = models.CharField(max_length=100)
@@ -17,9 +18,11 @@ class Book(models.Model):
     publisher = models.CharField(max_length=100, blank=True)
 
     def get_authors(self):
+        """Return list of Author objects who wrote this book"""
         return Author.objects.filter(books = self)
 
     def get_absolute_url(self):
+        """Return url for book detail page"""
         return reverse('book_detail', args=[str(self.book_id)])
 
     def __str__(self):
@@ -27,12 +30,14 @@ class Book(models.Model):
 
 
 class Author(models.Model):
+    """Author details"""
     author_id = models.CharField(max_length=10, primary_key=True)
     given_name = models.CharField(max_length=50)
     surname = models.CharField(max_length=50)
     books = models.ManyToManyField('Book', blank=True)
 
     def get_books(self):
+        """Return list of Book objects written by this author"""
         return Book.objects.filter(authors = self)
 
     def __str__(self):
