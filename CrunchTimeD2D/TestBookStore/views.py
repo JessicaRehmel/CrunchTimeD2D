@@ -19,6 +19,7 @@ from django.core.paginator import PageNotAnInteger
 
 # Create your views here.
 def index(request):
+    """Go to book list page"""
     all_books = Book.objects.all().order_by('title')
     paginator = Paginator(all_books, 3)
 
@@ -29,7 +30,9 @@ def index(request):
     page_obj = paginator.get_page(page_number)
     return render(request, 'index.html', {'page_obj': page_obj})
 
+
 def view_book_detail(request, book_id):
+    """Go to book detail page"""
     book = Book.objects.get(book_id=book_id)
 
     context = {
@@ -37,64 +40,66 @@ def view_book_detail(request, book_id):
     }
     return render(request, 'book_detail.html', context = context)
 
+
 class SearchResultsView(generic.ListView):
+    """Display results of search query"""
     model = Book
     template_name = 'search.html'
     paginate_by = 3
 
     def get_context_data(self, *args, **kwargs):
+        """Return context data of search query"""
         context = super().get_context_data(*args, **kwargs)
         query = self.request.GET.get('q')
         cat = self.request.GET.get('cat')
-        qlist = query.split()
+        q_list = query.split()
         book_list = Book.objects.none()
         title_list = Book.objects.none()
         isbn_list = Book.objects.none()
         exact_list = Book.objects.none()
         banned = []
 
-        fullQ = ""
-        for ql in qlist:
-            fullQ = fullQ + ql
-            fullQ = fullQ + " "
-        fullQ = fullQ[:len(fullQ) - 1]
-        print(fullQ)
+        full_q = ""
+        for ql in q_list:
+            full_q = full_q + ql
+            full_q = full_q + " "
+        full_q = full_q[:len(full_q) - 1]
+        print(full_q)
         if cat == "title" or cat == "any":
-            exact_list = Book.objects.filter(Q(title__icontains=fullQ) | Q(subtitle__icontains = fullQ)).order_by('title')
+            exact_list = Book.objects.filter(Q(title__icontains=full_q) | Q(subtitle__icontains = full_q)).order_by('title')
         if cat == "author" or cat == "any":
             print("check")
             author_list = Author.objects.none()
             surname_list = Author.objects.none()
             givenname_list = Author.objects.none()
-            for ql in qlist:
+            for ql in full_q:
                 surname_list = handle_if_none(surname_list, Author.objects.filter(surname__icontains = ql))
                 givenname_list = handle_if_none(givenname_list, Author.objects.filter(given_name__icontains = ql))
             if surname_list and givenname_list:
-                for sname in surname_list:
-                    if sname in givenname_list:
-                        author_list = handle_if_none(author_list, sname)
+                for s_name in surname_list:
+                    if s_name in givenname_list:
+                        author_list = handle_if_none(author_list, s_name)
             for author in author_list:
                     exact_list = handle_if_none(exact_list, author.get_books().order_by('title'))
         if cat == "isbn" or cat == "any":
-            exact_list = handle_if_none(exact_list, Book.objects.filter(Q(isbn_13__icontains = fullQ)).order_by('title'))
+            exact_list = handle_if_none(exact_list, Book.objects.filter(Q(isbn_13__icontains = full_q)).order_by('title'))
 
-        if len(qlist) > 1:
+        if len(q_list) > 1:
             banned = ["a", "the", "and", "an", "or", "on", "of", "in"]
 
-        allbanned = 1
-        for ql in qlist:
+        all_banned = 1
+        for ql in q_list:
             if ql.lower() not in banned:
                 allbanned = 0
 
-        if allbanned == 0:
-            for ql in qlist[:]:
+        if all_banned == 0:
+            for ql in q_list[:]:
                 if ql.lower() in banned:
-                    qlist.remove(ql)
+                    q_list.remove(ql)
 
-        print(qlist)
+        print(q_list)
 
-
-        for ql in qlist:
+        for ql in q_list:
             if cat == "author" or cat == "any":
                 author_list = Author.objects.none()
                 author_list = Author.objects.filter(surname__icontains = ql)
@@ -111,34 +116,33 @@ class SearchResultsView(generic.ListView):
 
         if cat == "isbn" or cat == "any":
             temp = ""
-            for digit in fullQ:
+            for digit in full_q:
                 if digit.isdigit():
                     temp = temp + digit
-            fullQ = temp
-            numeral_count = len(fullQ)
+            full_q = temp
+            numeral_count = len(full_q)
             if numeral_count == 10:
-                fullQ = convert_to_isbn13(fullQ)     
+                full_q = convert_to_isbn_13(full_q)     
                 
             for num in range(numeral_count-1,numeral_count - 3, -1):
                 for book in Book.objects.all():
                     similarity = 0
                     digit_count = 0
-                    if len(book.isbn_13) == len(fullQ):
+                    if len(book.isbn_13) == len(full_q):
                         for digit in book.isbn_13:
-                            if digit == fullQ[digit_count]:
+                            if digit == full_q[digit_count]:
                                 similarity = similarity + 1
                             digit_count = digit_count + 1
                         if similarity == num:
                             isbn_list = handle_if_none(isbn_list, Book.objects.filter(isbn_13 = book.isbn_13))
                     elif len(book.isbn_13) == 10:
-                        newisbn = convert_to_isbn13(book.isbn_13)
-                        for digit in newisbn:
-                            if digit == fullQ[digit_count]:
+                        new_isbn = convert_to_isbn_13(book.isbn_13)
+                        for digit in new_isbn:
+                            if digit == full_q[digit_count]:
                                 similarity = similarity + 1
                             digit_count = digit_count + 1
                         if similarity == num:
-                            isbn_list = handle_if_none(isbn_list, Book.objects.filter(isbn_13 = newisbn))
-
+                            isbn_list = handle_if_none(isbn_list, Book.objects.filter(isbn_13 = new_isbn))
         
         #remove duplicates
         exact_list = list(dict.fromkeys(exact_list))
@@ -179,8 +183,10 @@ class SearchResultsView(generic.ListView):
         return context
 
 
+
 @api_view(['POST'])
 def submit_onix(request):
+    """Accept API Post with Onix book data, store in file"""
     f = open("tempOnix.xml", "wb")
     f.write(request.POST['data'].encode("utf-8"))
     f.close()
@@ -198,8 +204,10 @@ def submit_onix(request):
         os.remove("tempOnix.xml")
         return Response("Invalid XML", status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 def process_onix(request):
+    """Accept API Post to process stored Onix file"""
     with open("onix.xml", "rb") as f:
         xml = f.read()
 
@@ -257,6 +265,10 @@ def process_onix(request):
         
         #authors
         contribs = p.xpath("./onix:DescriptiveDetail/onix:Contributor", namespaces = ns)
+        for a in book.authors.all():
+            a.books.remove(book)
+            book.authors.remove(a)
+
         for c in contribs:
             author = Author()
             
@@ -271,11 +283,11 @@ def process_onix(request):
             author.save()
             book.authors.add(author)
             author.books.add(book)
-
-
     return Response("", status=status.HTTP_201_CREATED)
 
+
 def unescape(hstr):
+    """Translate HTML escape sequences"""
     pstr = ""
     delay = 0
     for i in range(0, 2):
@@ -313,27 +325,30 @@ def unescape(hstr):
         hstr = pstr
     return pstr
 
-def convert_to_isbn13(isbn10):
-    isbn13 = "978"
-    for digit in isbn10[:9]:
-        searchisbn = searchisbn + digit
+
+def convert_to_isbn_13(isbn_10):
+    """Convert ISBN10 or ISBN13 to ISBN13"""
+    isbn_13 = "978"
+    for digit in isbn_10[:9]:
+        isbn_13 = isbn_13 + digit
 
     check = 0
     for index in range(0, 10):
         if index % 2 == 1:
-            check  = check + (isbn10[index] *  1)
+            check  = check + (int(isbn_10[index]) *  1)
         else:
-            check  = check + (isbn10[index] *  3)
+            check  = check + (int(isbn_10[index]) *  3)
     check = check % 10
 
     if check != 0:
         check = 10 - check
-    isbn13 = isbn13 + check
+    isbn_13 = isbn_13 + str(check)
 
-    return isbn13
+    return isbn_13
 
 
 def handle_if_none(list, query):
+    """Handle empty queries"""
     if list is None:
         list = query
     else:
